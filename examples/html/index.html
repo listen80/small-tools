@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>html2md</title>
+</head>
+
+<body>
+     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 40px);
+        }
+        textarea {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+    </style>
+
+    <!-- 修改文本域容器结构 -->
+    <div class="container">
+        <textarea name="" id="html" placeholder="请输入 HTML 内容"></textarea>
+        <textarea name="" id="markdown" placeholder="转换后的 Markdown 内容将显示在这里" readonly></textarea>
+    </div>
+    <script src="html2md.js"></script>
+    <script>
+    // 添加样式标签，实现左右布局
+    const htmlTextarea = document.getElementById('html');
+    const markdownTextarea = document.getElementById('markdown');
+    htmlTextarea.addEventListener('input', () => {
+        const html = htmlTextarea.value;
+        const markdown = html2md(html);
+        markdownTextarea.value = markdown;
+    });
+    </script>
+</body>
+
+</html>
