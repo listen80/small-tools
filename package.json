@@ -1,0 +1,22 @@
+{
+  "name": "small-tools",
+  "version": "1.0.0",
+  "description": "\"# small-tools\"",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/listen80/small-tools.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/listen80/small-tools/issues"
+  },
+  "homepage": "https://github.com/listen80/small-tools#readme"
+}

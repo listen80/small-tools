@@ -4,32 +4,103 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-  <title>货款计算器</title>
+  <title>贷款计算器</title>
   <style type="text/css">
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #f5f7fa;
+      --border-color: #d1d5db;
+      --text-color: #333;
+      --success-color: #4caf50;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
     table {
-      margin: auto;
+      background-color: white;
       border-collapse: collapse;
-      width: 280px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 400px;
     }
 
+    th,
     td {
-      border: 1px solid #ccc;
-      padding: 8px 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
     }
 
-    input {
-      width: 72px;
+    th {
+      background-color: var(--primary-color);
+      color: white;
+      text-align: left;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
     }
 
     ol {
       margin: 0;
-      line-height: 18px;
-      max-height: 90px;
+      line-height: 1.6;
+      max-height: 150px;
       overflow-y: auto;
     }
 
-    #payment {
-      width: 160px;
+    ol li {
+      padding: 4px 0;
+    }
+
+    #payment,
+    #total,
+    #totalinterest {
+      color: var(--success-color);
+      font-weight: bold;
+    }
+
+    /* 新增样式：优化单选按钮和标签的布局 */
+    input[type="radio"] {
+      width: auto;
+      margin-right: 8px;
+    }
+
+    label {
+      margin-right: 16px;
+    }
+
+    /* 新增样式：优化表格响应式 */
+    @media (max-width: 480px) {
+      table {
+        width: 100%;
+      }
+    }
+
+    /* 新增样式：优化输入框与单位的间距 */
+    td input+span {
+      margin-left: 4px;
     }
   </style>
 </head>
@@ -37,24 +108,29 @@
 <body>
   <table>
     <tr>
-      <td>贷款总额:</td>
-      <td><input type="number" pattern="\d*" min="1" max="1000" id="amount" oninput="calculate();" />(万)</td>
+      <th colspan="2">贷款计算器</th>
     </tr>
     <tr>
-      <td>贷款利率:</td>
-      <td><input type="number" pattern="\d*" min="1" max="36" id="apr" oninput="calculate();" />(%)</td>
+      <td>贷款总额<span>(万)</span>:</td>
+      <td><input type="number" pattern="\d*" min="1" max="1000" id="amount" oninput="calculate();" />
+      </td>
+
     </tr>
     <tr>
-      <td>贷款期限:</td>
-      <td><input type="number" pattern="\d*" min="1" max="30" id="month" oninput="calculate();" />(月)</td>
+      <td>贷款利率<span>(%)</span>:</td>
+      <td><input type="number" pattern="\d*" min="1" max="36" id="apr" oninput="calculate();" /></td>
+    </tr>
+    <tr>
+      <td>贷款期限<span>(月)</span>:</td>
+      <td><input type="number" pattern="\d*" min="1" max="30" id="month" oninput="calculate();" /></td>
     </tr>
     <tr>
       <td>还款方式:</td>
       <td>
-        <select id="type" onchange="calculate();">
-          <option value="0" selected>等额本息</option>
-          <option value="1">等额本金</option>
-        </select>
+        <input type="radio" id="type_0" name="type" value="0" checked onchange="calculate();">
+        <label for="type_0">等额本息</label>
+        <input type="radio" id="type_1" name="type" value="1" onchange="calculate();">
+        <label for="type_1">等额本金</label>
       </td>
     </tr>
     <tr>
@@ -80,41 +156,49 @@
     }
 
     function calculate() {
-      var amount = $("amount").value,
-        apr = $("apr").value,
-        month = $("month").value,
-        type = $("type").value,
+      var amount = parseFloat($("amount").value),
+        apr = parseFloat($("apr").value),
+        month = parseInt($("month").value),
+        // 修正获取单选按钮值的方式
+        type = document.querySelector('input[name="type"]:checked').value,
         payment = $("payment"),
         total = $("total"),
         totalinterest = $("totalinterest"),
         principal = amount * 10000,
         interest = apr / 100 / 12,
-        payments = parseInt(month);
+        payments = month;
 
-      if (!principal || !interest || !payments) {
+      // 检查输入是否有效
+      if (isNaN(principal) || isNaN(interest) || isNaN(payments) || principal <= 0 || interest <= 0 || payments <= 0) {
         payment.innerHTML = "";
         total.innerHTML = "";
         totalinterest.innerHTML = "";
-        return
+        return;
       }
       save(amount, apr, month, type);
       if (type === '0') {
-        var x = Math.pow(1 + interest, payments)
-        var monthly = (principal * x * interest) / (x - 1)
-        payment.innerHTML = monthly.toFixed(2)
-        total.innerHTML = (monthly * payments).toFixed(2)
-        totalinterest.innerHTML = ((monthly * payments) - principal).toFixed(2)
-
-      } else {
-        var monthly = principal / payments
-        var payment_totalinterest = (payments + 1) / 2 * principal * interest
-        totalinterest.innerHTML = payment_totalinterest.toFixed(2)
-        total.innerHTML = (payment_totalinterest + principal).toFixed(2)
-        payment.innerHTML = `<ol>${' '.repeat(payments).split('').map((v, i) => {
-          return `<li>${(monthly + (payments - i) / payments * principal * interest).toFixed(2)}</li>`
-        }).join('')}</ol>`
+        // 等额本息计算
+        var x = Math.pow(1 + interest, payments);
+        var monthly = (principal * x * interest) / (x - 1);
+        payment.innerHTML = monthly.toFixed(2);
+        total.innerHTML = (monthly * payments).toFixed(2);
+        totalinterest.innerHTML = ((monthly * payments) - principal).toFixed(2);
       }
-
+      if (type === '1') {
+        // 等额本金计算
+        var monthlyPrincipal = principal / payments;
+        var totalInterest = 0;
+        let paymentList = [];
+        for (let i = 1; i <= payments; i++) {
+          let monthlyInterest = (principal - monthlyPrincipal * (i - 1)) * interest;
+          let monthlyPayment = monthlyPrincipal + monthlyInterest;
+          totalInterest += monthlyInterest;
+          paymentList.push(`<li>${monthlyPayment.toFixed(2)}</li>`);
+        }
+        totalinterest.innerHTML = totalInterest.toFixed(2);
+        total.innerHTML = (totalInterest + principal).toFixed(2);
+        payment.innerHTML = `<ol>${paymentList.join('')}</ol>`;
+      }
     }
 
     function save(amount, apr, month, type) {
@@ -132,13 +216,19 @@
         $("amount").value = data[0] || 0
         $("apr").value = data[1] || 0
         $("month").value = data[2] || 0
-        $("type").value = data[3] || 0
+        // 修正从URL参数设置单选按钮选中状态
+        if (data[3]) {
+          document.querySelector(`input[name="type"][value="${data[3]}"]`).checked = true;
+        }
         calculate()
       } else if (window.localStorage && localStorage.loan_amount) {
         $("amount").value = localStorage.loan_amount;
         $("apr").value = localStorage.loan_apr;
         $("month").value = localStorage.loan_month;
-        $("type").value = localStorage.loan_type;
+        // 修正从localStorage设置单选按钮选中状态
+        if (localStorage.loan_type) {
+          document.querySelector(`input[name="type"][value="${localStorage.loan_type}"]`).checked = true;
+        }
         calculate()
       }
     }
